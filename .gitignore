@@ -3,3 +3,10 @@ __pycache__/
 dataset
 models
 csv
+test_dataset
+predictions
+
+images.png
+Loss Graph.png
+masks.png
+git

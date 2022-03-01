@@ -1,24 +1,26 @@
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
 from model import build_model
-from data import load_dataset, tf_dataset
+from load_data import load_dataset, tf_dataset
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, CSVLogger, EarlyStopping
 
 
 if __name__ == "__main__":
     """ Hyperparamaters """
-    dataset_path = "building-segmentation"
+
     input_shape = (1024, 1024, 3)
-    batch_size = 4
+    batch_size = 1
     epochs = 5
     lr = 1e-3
-    model_path = f"models/damane_model_{epochs}.h5"
-    csv_path = f"csv/damane_model_{epochs}.csv"
+    model_path = f"models/master_model_{epochs}.h5"
+    csv_path = f"csv/master_model_{epochs}.csv"
 
     """ Load the dataset """
-    (train_images, train_masks), (val_images, val_masks) = load_dataset(dataset_path)
+    (train_images, train_masks), (val_images, val_masks) = load_dataset()
     print(f"Train: {len(train_images)} - {len(train_masks)}")
     print(f"Validation: {len(val_images)} - {len(val_masks)}")
 
@@ -32,8 +34,8 @@ if __name__ == "__main__":
         loss="binary_crossentropy",
         optimizer=tf.keras.optimizers.Adam(lr),
         metrics=[
-            # tf.keras.metrics.MeanIoU(num_classes=2),
-            # tf.keras.metrics.IoU(num_classes=2, target_class_ids=[0]),
+            tf.keras.metrics.MeanIoU(num_classes=2),
+            tf.keras.metrics.IoU(num_classes=2, target_class_ids=[0]),
             tf.keras.metrics.Recall(),
             tf.keras.metrics.Precision()
         ]
@@ -55,7 +57,7 @@ if __name__ == "__main__":
     if len(val_images) % batch_size != 0:
         test_steps += 1
 
-    model.fit(
+    history = model.fit(
         train_dataset,
         validation_data=val_dataset,
         epochs=epochs,
@@ -65,16 +67,16 @@ if __name__ == "__main__":
     )
 
     # Plot the training and validation loss
-
-    loss = model.history['loss']
-    val_loss = model.history['val_loss']
+    loss = history.history['loss']
+    val_loss = history.history['val_loss']
 
     plt.figure()
-    plt.plot(model.epoch, loss, 'r', label='Training loss')
-    plt.plot(model.epoch, val_loss, 'bo', label='Validation loss')
+    plt.plot(history.epoch, loss, 'r', label='Training loss')
+    plt.plot(history.epoch, val_loss, 'bo', label='Validation loss')
     plt.title('Training and Validation Loss')
     plt.xlabel('Epoch')
     plt.ylabel('Loss Value')
-    plt.ylim([0, 1])
+    plt.ylim([0, 3])
     plt.legend()
-    plt.show()
+    plt.savefig("Loss Graph")
+    # plt.show()
