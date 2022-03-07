@@ -29,11 +29,16 @@ def decoder_block(input, skip_features, num_filters):
 def build_model(input_shape):
     inputs = Input(input_shape)
     """
+
     s1, p1 = encoder_block(inputs, 64)
+    s2, p2 = encoder_block(p1, 128)
+    s3, p3 = encoder_block(p2, 256)
 
-    b1 = conv_block(p1, 256)
+    b1 = conv_block(p3, 512)
 
-    d4 = decoder_block(b1, s1, 64)
+    d2 = decoder_block(b1, s3, 256)
+    d3 = decoder_block(d2, s2, 128)
+    d4 = decoder_block(d3, s1, 64)
 
     """
     s1, p1 = encoder_block(inputs, 64)
@@ -49,12 +54,11 @@ def build_model(input_shape):
     d4 = decoder_block(d3, s1, 64)
 
 
-
     outputs = Conv2D(1, 1, padding="same", activation="sigmoid")(d4)
     model = Model(inputs, outputs, name="Master-Net")
     return model
 
 if __name__ == "__main__":
-    input_shape = (1024, 1024, 3)
+    input_shape = (512, 512, 3)
     model = build_model(input_shape)
     model.summary()

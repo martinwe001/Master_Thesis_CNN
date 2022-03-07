@@ -7,7 +7,6 @@ import cv2
 from glob import glob
 from tqdm import tqdm
 import tensorflow_addons as tfa
-from load_test_images import load_dataset, tf_dataset
 
 
 if __name__ == "__main__":
@@ -17,43 +16,11 @@ if __name__ == "__main__":
     """ Load the model """
 
     model = 'master_model'
-    epochs = 24
+    epochs = 25
 
     model = tf.keras.models.load_model(f"models/{model}_{epochs}.h5", custom_objects={'MaxUnpooling2D': tfa.layers.MaxUnpooling2D})
 
-    dataset = load_dataset()
-    dataset = tf_dataset(dataset)
-    print(dataset)
-    for i, element in enumerate(dataset):
-        for j, image in enumerate(element):
-            original_image = image
-            h, w, _ = image.shape
-
-            x = np.expand_dims(image, axis=0)
-            pred_mask = model.predict(x)[0]
-
-            pred_mask = np.concatenate(
-                [
-                    pred_mask,
-                    pred_mask,
-                    pred_mask
-                ], axis=2)
-            pred_mask = (pred_mask > 0.5) * 255
-            pred_mask = pred_mask.astype(np.float32)
-            # pred_mask = cv2.resize(pred_mask, (w, h))
-            original_image = np.array(original_image)
-
-
-            alpha_image = 0.5
-            alpha_mask = 1
-            cv2.addWeighted(pred_mask, alpha_mask, original_image, alpha_image, 0, original_image)
-            image = tf.data.Dataset.from_tensor_slices(original_image)
-            cv2.imwrite(f"pred_test/{i+1}-{j+1}.jpg", original_image)
-
-
-
-    """
-        for path in tqdm(test_images, total=len(test_images)):
+    for path in tqdm(test_images, total=len(test_images)):
         x = cv2.imread(path, cv2.IMREAD_COLOR)
         original_image = x
         h, w, _ = x.shape
@@ -82,6 +49,3 @@ if __name__ == "__main__":
 
         name = path.split("/")[-1]
         cv2.imwrite(f"predictions/{name}", original_image)
-
-    """
-

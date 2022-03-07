@@ -5,8 +5,9 @@ models
 csv
 test_dataset
 predictions
+pred_test
 
 images.png
-Loss Graph.png
+loss_graph.png
 masks.png
 git
