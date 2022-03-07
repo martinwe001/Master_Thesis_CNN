@@ -38,6 +38,7 @@ def load_dataset():
 
     return (train_x, train_y), (test_x, test_y)
 
+
 def preprocess(image_path, mask_path):
     def f(image_path, mask_path):
         image_path = image_path.decode()
@@ -55,13 +56,30 @@ def preprocess(image_path, mask_path):
     return image, mask
 
 
+get_patches = lambda x, y: (
+    tf.reshape(
+        tf.image.extract_patches(
+            images=tf.expand_dims(x, 0),
+            sizes=[1, 1024, 1024, 1],
+            strides=[1, 1024, 1024, 1],
+            rates=[1, 1, 1, 1],
+            padding='VALID'), [-1, 1024, 1024, 3]),
+    (tf.reshape(
+        tf.image.extract_patches(
+            images=tf.expand_dims(y, 0),
+            sizes=[1, 1024, 1024, 1],
+            strides=[1, 1024, 1024, 1],
+            rates=[1, 1, 1, 1],
+            padding='VALID'), [-1, 1024, 1024, 1])))
+
+
 def tf_dataset(images, masks, batch=4):
     dataset = tf.data.Dataset.from_tensor_slices((images, masks))
     dataset = dataset.shuffle(buffer_size=5000)
     dataset = dataset.map(preprocess)
-    dataset = dataset.batch(batch)
+    dataset = dataset.map(get_patches)
+    dataset = dataset.repeat(15)
     dataset = dataset.prefetch(2)
-    print(dataset)
     return dataset
 
 if __name__ == "__main__":
@@ -70,3 +88,4 @@ if __name__ == "__main__":
     print(f"Validation: {len(test_x)} - {len(test_y)}")
 
     train_dataset = tf_dataset(train_x, train_y, batch=4)
+

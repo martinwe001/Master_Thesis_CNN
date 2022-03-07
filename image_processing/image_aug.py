@@ -2,14 +2,13 @@ import cv2
 import os
 
 
-data_type = 'images'
-folder_path = f'dataset/{data_type}/'
+data_type = 'color_masks'
+folder_path = f'test_dataset/{data_type}/'
 
 
 def image_augmentation(path):
 
     for image in os.listdir(path):
-
         original_image = cv2.imread(os.path.join(path, image))
 
         flip_vertical = cv2.flip(original_image, 0)
@@ -18,9 +17,9 @@ def image_augmentation(path):
 
         name = image.split('.')[0]
 
-        cv2.imwrite(f'dataset/{data_type}/{name}-1' + '.jpg', flip_vertical)
-        cv2.imwrite(f'dataset/{data_type}/{name}-2' + '.jpg', flip_horizontal)
-        cv2.imwrite(f'dataset/{data_type}/{name}-3' + '.jpg', flip_both)
+        cv2.imwrite(f'test_dataset/{data_type}/{name}-1' + '.jpg', flip_vertical)
+        cv2.imwrite(f'test_dataset/{data_type}/{name}-2' + '.jpg', flip_horizontal)
+        cv2.imwrite(f'test_dataset/{data_type}/{name}-3' + '.jpg', flip_both)
 
     cv2.waitKey()
 

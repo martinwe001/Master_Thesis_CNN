@@ -7,6 +7,6 @@ test_dataset
 predictions
 
 images.png
-Loss Graph.png
+loss_graph.png
 masks.png
 git
