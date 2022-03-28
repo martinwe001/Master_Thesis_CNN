@@ -10,11 +10,11 @@ import matplotlib.pyplot as plt
 
 
 dataset_path = "test_dataset"
-images_path = "images/*"
-masks_path = "masks/*"
+images_path = "images_old/*"
+masks_path = "masks_old/*"
 
-image_folder = 'dataset/images/'
-masks_folder = 'dataset/masks/'
+image_folder = 'dataset/images_old/'
+masks_folder = 'dataset/masks_old/'
 
 
 def create_patches(image_folder, mask_folder):
@@ -43,8 +43,8 @@ def create_patches(image_folder, mask_folder):
 
     masks = tf.reshape(masks, [-1, 256, 256, 1])
     """
-    image = read_image(os.path.join(dataset_path,'images/trd_1_crop_6.jpg'))
-    mask = read_image(os.path.join(dataset_path,'masks/trd_1_crop_mask_6.jpg'))
+    image = read_image(os.path.join(dataset_path,'images_old/trd_1_crop_6.jpg'))
+    mask = read_image(os.path.join(dataset_path,'masks_old/trd_1_crop_mask_6.jpg'))
     
     image = tf.expand_dims(image, 0)
     mask = tf.expand_dims(mask, 0)

@@ -10,7 +10,7 @@ import tensorflow_addons as tfa
 
 
 if __name__ == "__main__":
-    """ Load the test images """
+    """ Load the test images_old """
     test_images = glob("dataset/test_images/*")
 
     """ Load the model """

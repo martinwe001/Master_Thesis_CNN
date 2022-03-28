@@ -1,10 +1,9 @@
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-import numpy as np
 import tensorflow as tf
-from tensorflow.keras.layers import Convolution2D,BatchNormalization,ReLU,LeakyReLU,Add,Activation, Conv2D, MaxPool2D, Conv2DTranspose, Concatenate
-from tensorflow.keras.layers import GlobalAveragePooling2D,AveragePooling2D,UpSampling2D
+from tensorflow.keras.layers import Convolution2D, BatchNormalization, Activation, Conv2D, MaxPool2D, Conv2DTranspose, Concatenate, ReLU,LeakyReLU,Add,Activation
+from tensorflow.keras.layers import GlobalAveragePooling2D, AveragePooling2D, UpSampling2D
 
 
 def conv_block(input, num_filters):
@@ -17,20 +16,6 @@ def conv_block(input, num_filters):
     x = Activation("relu")(x)
 
     return x
-
-
-def encoder_block(input, num_filters):
-    x = conv_block(input, num_filters)
-    p = MaxPool2D((2, 2))(x)
-    return x, p
-
-
-def decoder_block(input, skip_features, num_filters):
-    x = Conv2DTranspose(num_filters, (2, 2), strides=2, padding="same")(input)
-    x = Concatenate()([x, skip_features])
-    x = conv_block(x, num_filters)
-    return x
-
 
 """
 def conv_block(X, filters, block):
@@ -64,8 +49,31 @@ def conv_block(X, filters, block):
 """
 
 
+def encoder_block(input, num_filters):
+    x = conv_block(input, num_filters)
+    p = MaxPool2D((2, 2))(x)
+    return x, p
+
+
+def decoder_block(input, skip_features, num_filters):
+    x = Conv2DTranspose(num_filters, (2, 2), strides=2, padding="same")(input)
+    x = Concatenate()([x, skip_features])
+    x = conv_block(x, num_filters)
+    return x
+
+
 def base_feature_maps(input_layer):
-    # base covolution module to get input image feature maps
+    # base convolution module to get input image feature maps
+    """
+    # block_1
+    base = conv_block(input_layer, [32, 32, 64], '1')
+    # block_2
+    base = conv_block(base, [64, 64, 128], '2')
+    # block_3
+    base = conv_block(base, [128, 128, 256], '3')
+    return base
+
+    """
     s1, p1 = encoder_block(input_layer, 64)
     s2, p2 = encoder_block(p1, 128)
     s3, p3 = encoder_block(p2, 256)
@@ -74,12 +82,14 @@ def base_feature_maps(input_layer):
 
 def pyramid_feature_maps(input_layer):
     # pyramid pooling module
+    #
     base, s3, s2, s1 = base_feature_maps(input_layer)
+    # base = base_feature_maps(input_layer)
     # red
     red = GlobalAveragePooling2D(name='red_pool')(base)
     red = tf.keras.layers.Reshape((1, 1, 256))(red)
     red = Convolution2D(filters=64, kernel_size=(1, 1), name='red_1_by_1')(red)
-    red = UpSampling2D(size=32, interpolation='bilinear', name='red_upsampling')(red)
+    red = UpSampling2D(size=64, interpolation='bilinear', name='red_upsampling')(red)
     # yellow
     yellow = AveragePooling2D(pool_size=(2, 2), name='yellow_pool')(base)
     yellow = Convolution2D(filters=64, kernel_size=(1, 1), name='yellow_1_by_1')(yellow)
@@ -97,24 +107,29 @@ def pyramid_feature_maps(input_layer):
 
 
 def last_conv_module(input_layer):
+
     X, s3, s2, s1 = pyramid_feature_maps(input_layer)
     d2 = decoder_block(X, s3, 256)
     d3 = decoder_block(d2, s2, 128)
     d4 = decoder_block(d3, s1, 64)
-    outputs = Conv2D(3, 3, padding="same", activation="sigmoid")(d4)
-
+    X = Conv2D(1, 1, padding="same", activation="sigmoid")(d4)
+    # X = tf.keras.layers.Flatten(name='last_conv_flatten')(X)
     """
+    X = pyramid_feature_maps(input_layer)
     X = Convolution2D(filters=3, kernel_size=3, padding='same', name='last_conv_3_by_3')(X)
     X = BatchNormalization(name='last_conv_3_by_3_batch_norm')(X)
-    X = Activation('sigmoid', name='last_conv_relu')(X)
-    X = tf.keras.layers.Flatten(name='last_conv_flatten')(X)
+    X = Activation('softmax', name='last_conv_relu')(X)
+    
+    # X = tf.reshape(X, [1, 1024, 1024, 3])
     """
+    return X
 
-    return outputs
 
+def build_model():
+    input_layer = tf.keras.Input((512, 512, 3), name='input')
+    output_layer = last_conv_module(input_layer)
+    model = tf.keras.Model(inputs=input_layer, outputs=output_layer)
+    # model.summary()
+    return model
 
-input_layer = tf.keras.Input((256, 256, 3), name='input')
-output_layer = last_conv_module(input_layer)
-model = tf.keras.Model(inputs=input_layer, outputs=output_layer)
-model.summary()
-
+build_model()

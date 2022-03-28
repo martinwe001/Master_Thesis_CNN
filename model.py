@@ -1,6 +1,7 @@
 from tensorflow.keras.layers import Conv2D, BatchNormalization, Activation, MaxPool2D, Conv2DTranspose, Concatenate, Input
 from tensorflow.keras.models import Model
 
+
 def conv_block(input, num_filters):
     x = Conv2D(num_filters, 3, padding="same")(input)
     x = BatchNormalization()(x)
@@ -53,12 +54,12 @@ def build_model(input_shape):
     d3 = decoder_block(d2, s2, 128)
     d4 = decoder_block(d3, s1, 64)
 
-
     outputs = Conv2D(1, 1, padding="same", activation="sigmoid")(d4)
     model = Model(inputs, outputs, name="Master-Net")
     return model
 
+
 if __name__ == "__main__":
     input_shape = (512, 512, 3)
     model = build_model(input_shape)
-    model.summary()
+    # model.summary()

@@ -10,20 +10,17 @@ import tensorflow_addons as tfa
 from load_test_images import load_dataset, tf_dataset
 
 
-if __name__ == "__main__":
-    """ Load the test images """
-    test_images = glob("dataset/test_images/*")
 
+if __name__ == "__main__":
     """ Load the model """
 
     model = 'master_model'
-    epochs = 24
+    epochs = 40
 
     model = tf.keras.models.load_model(f"models/{model}_{epochs}.h5", custom_objects={'MaxUnpooling2D': tfa.layers.MaxUnpooling2D})
 
     dataset = load_dataset()
     dataset = tf_dataset(dataset)
-    print(dataset)
     for i, element in enumerate(dataset):
         for j, image in enumerate(element):
             original_image = image
@@ -38,14 +35,13 @@ if __name__ == "__main__":
                     pred_mask,
                     pred_mask
                 ], axis=2)
-            pred_mask = (pred_mask > 0.5) * 255
+            pred_mask = (pred_mask > 0.3) * 255
             pred_mask = pred_mask.astype(np.float32)
             # pred_mask = cv2.resize(pred_mask, (w, h))
             original_image = np.array(original_image)
 
-
-            alpha_image = 0.5
-            alpha_mask = 1
+            alpha_image = 0.6
+            alpha_mask = 0.8
             cv2.addWeighted(pred_mask, alpha_mask, original_image, alpha_image, 0, original_image)
             image = tf.data.Dataset.from_tensor_slices(original_image)
             cv2.imwrite(f"pred_test/{i+1}-{j+1}.jpg", original_image)

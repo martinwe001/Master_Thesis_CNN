@@ -4,8 +4,8 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from model import build_model
-from load_data import load_dataset, tf_dataset
+from master_model import build_model
+# from load_data import load_dataset, tf_dataset
 from load_patches import load_dataset, tf_dataset
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, CSVLogger, EarlyStopping
 
@@ -13,9 +13,8 @@ from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, CSVLo
 if __name__ == "__main__":
     """ Hyperparamaters """
 
-    input_shape = (1024, 1024, 3)
-    batch_size = 1
-    epochs = 24
+    batch_size = 2
+    epochs = 39
     lr = 1e-3
     model_path = f"models/master_model_{epochs}.h5"
     csv_path = f"csv/master_model_{epochs}.csv"
@@ -30,10 +29,7 @@ if __name__ == "__main__":
     train_dataset = tf_dataset(train_images, train_masks, batch=batch_size)
     val_dataset = tf_dataset(val_images, val_masks, batch=batch_size)
 
-
-
-
-    model = build_model(input_shape)
+    model = build_model()
 
     model.compile(
         loss='binary_crossentropy',
@@ -48,7 +44,7 @@ if __name__ == "__main__":
 
     callbacks = [
         ModelCheckpoint(model_path, monitor="val_loss", verbose=1),
-        ReduceLROnPlateau(monitor="val_loss", patience=10, factor=0.1, verbose=1),
+        ReduceLROnPlateau(monitor="val_loss", patience=5, factor=0.1, verbose=1),
         CSVLogger(csv_path),
         EarlyStopping(monitor="val_loss", patience=10)
     ]
@@ -82,5 +78,4 @@ if __name__ == "__main__":
     plt.ylabel('Loss Value')
     plt.ylim([0, 1])
     plt.legend()
-    plt.savefig("loss_graph")
-    # plt.show()
+    plt.savefig(f"loss_plot/loss_graph_{epochs}")

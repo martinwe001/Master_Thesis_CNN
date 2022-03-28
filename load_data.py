@@ -14,13 +14,11 @@ masks_path = "masks/*"
 
 def read_image(path):
     x = cv2.imread(path, cv2.IMREAD_COLOR)
-    # x = x / 255.0
     x = x.astype(np.float32) # usikker om vi trenger denne
     return x
 
 def read_mask(path):
     x = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-    # x = x/255.0
     x = x > 0.5
     x = x.astype(np.float32) # usikker om vi trenger denne
     x = np.expand_dims(x, axis=-1)
@@ -61,7 +59,6 @@ def tf_dataset(images, masks, batch=4):
     dataset = dataset.map(preprocess)
     dataset = dataset.batch(batch)
     dataset = dataset.prefetch(2)
-    print(dataset)
     return dataset
 
 if __name__ == "__main__":

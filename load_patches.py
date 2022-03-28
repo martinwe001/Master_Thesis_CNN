@@ -14,13 +14,11 @@ masks_path = "masks/*"
 
 def read_image(path):
     x = cv2.imread(path, cv2.IMREAD_COLOR)
-    # x = x / 255.0
     x = x.astype(np.float32) # usikker om vi trenger denne
     return x
 
 def read_mask(path):
     x = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
-    # x = x/255.0
     x = x > 0.5
     x = x.astype(np.float32) # usikker om vi trenger denne
     x = np.expand_dims(x, axis=-1)
@@ -60,17 +58,17 @@ get_patches = lambda x, y: (
     tf.reshape(
         tf.image.extract_patches(
             images=tf.expand_dims(x, 0),
-            sizes=[1, 1024, 1024, 1],
-            strides=[1, 1024, 1024, 1],
+            sizes=[1, 512, 512, 1],
+            strides=[1, 512, 512, 1],
             rates=[1, 1, 1, 1],
-            padding='VALID'), [-1, 1024, 1024, 3]),
+            padding='VALID'), [-1, 512, 512, 3]),
     (tf.reshape(
         tf.image.extract_patches(
             images=tf.expand_dims(y, 0),
-            sizes=[1, 1024, 1024, 1],
-            strides=[1, 1024, 1024, 1],
+            sizes=[1, 512, 512, 1],
+            strides=[1, 512, 512, 1],
             rates=[1, 1, 1, 1],
-            padding='VALID'), [-1, 1024, 1024, 1])))
+            padding='VALID'), [-1, 512, 512, 1])))
 
 
 def tf_dataset(images, masks, batch=4):
@@ -78,7 +76,7 @@ def tf_dataset(images, masks, batch=4):
     dataset = dataset.shuffle(buffer_size=5000)
     dataset = dataset.map(preprocess)
     dataset = dataset.map(get_patches)
-    dataset = dataset.repeat(15)
+    dataset = dataset.repeat(100)
     dataset = dataset.prefetch(2)
     return dataset
 
