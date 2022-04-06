@@ -6,6 +6,7 @@ csv
 test_dataset
 predictions
 pred_test
+loss_plot
 
 images.png
 loss_graph.png
