@@ -1,5 +1,6 @@
 from tensorflow.keras.layers import Conv2D, BatchNormalization, Activation, MaxPool2D, Conv2DTranspose, Concatenate, Input
 from tensorflow.keras.models import Model
+import tensorflow as tf
 
 
 def conv_block(input, num_filters):
@@ -27,8 +28,8 @@ def decoder_block(input, skip_features, num_filters):
     return x
 
 
-def build_model(input_shape):
-    inputs = Input(input_shape)
+def build_model():
+    inputs = tf.keras.Input((512, 512, 3))
     """
 
     s1, p1 = encoder_block(inputs, 64)

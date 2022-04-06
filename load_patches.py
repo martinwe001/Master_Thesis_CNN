@@ -76,7 +76,7 @@ def tf_dataset(images, masks, batch=4):
     dataset = dataset.shuffle(buffer_size=5000)
     dataset = dataset.map(preprocess)
     dataset = dataset.map(get_patches)
-    dataset = dataset.repeat(100)
+    dataset = dataset.repeat(1000)
     dataset = dataset.prefetch(2)
     return dataset
 

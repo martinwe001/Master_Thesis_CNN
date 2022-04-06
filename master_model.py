@@ -77,19 +77,21 @@ def base_feature_maps(input_layer):
     s1, p1 = encoder_block(input_layer, 64)
     s2, p2 = encoder_block(p1, 128)
     s3, p3 = encoder_block(p2, 256)
-    return p3, s3, s2, s1
+    s4, p4 = encoder_block(p3, 512)
+    # s5, p5 = encoder_block(p4, 1024)
+    return p4, s4, s3, s2, s1
 
 
 def pyramid_feature_maps(input_layer):
     # pyramid pooling module
     #
-    base, s3, s2, s1 = base_feature_maps(input_layer)
+    base, s4, s3, s2, s1 = base_feature_maps(input_layer)
     # base = base_feature_maps(input_layer)
     # red
     red = GlobalAveragePooling2D(name='red_pool')(base)
-    red = tf.keras.layers.Reshape((1, 1, 256))(red)
+    red = tf.keras.layers.Reshape((1, 1, 512))(red)
     red = Convolution2D(filters=64, kernel_size=(1, 1), name='red_1_by_1')(red)
-    red = UpSampling2D(size=64, interpolation='bilinear', name='red_upsampling')(red)
+    red = UpSampling2D(size=32, interpolation='bilinear', name='red_upsampling')(red)
     # yellow
     yellow = AveragePooling2D(pool_size=(2, 2), name='yellow_pool')(base)
     yellow = Convolution2D(filters=64, kernel_size=(1, 1), name='yellow_1_by_1')(yellow)
@@ -103,13 +105,15 @@ def pyramid_feature_maps(input_layer):
     green = Convolution2D(filters=64, kernel_size=(1, 1), name='green_1_by_1')(green)
     green = UpSampling2D(size=8, interpolation='bilinear', name='green_upsampling')(green)
     # base + red + yellow + blue + green
-    return tf.keras.layers.concatenate([base, red, yellow, blue, green]), s3, s2, s1
+    return tf.keras.layers.concatenate([base, red, yellow]), s4, s3, s2, s1
 
 
 def last_conv_module(input_layer):
 
-    X, s3, s2, s1 = pyramid_feature_maps(input_layer)
-    d2 = decoder_block(X, s3, 256)
+    X, s4, s3, s2, s1 = pyramid_feature_maps(input_layer)
+    # d0 = decoder_block(X, s5, 1024)
+    d1 = decoder_block(X, s4, 512)
+    d2 = decoder_block(d1, s3, 256)
     d3 = decoder_block(d2, s2, 128)
     d4 = decoder_block(d3, s1, 64)
     X = Conv2D(1, 1, padding="same", activation="sigmoid")(d4)
@@ -129,6 +133,7 @@ def build_model():
     input_layer = tf.keras.Input((512, 512, 3), name='input')
     output_layer = last_conv_module(input_layer)
     model = tf.keras.Model(inputs=input_layer, outputs=output_layer)
+
     # model.summary()
     return model
 

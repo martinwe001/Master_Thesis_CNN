@@ -15,9 +15,11 @@ if __name__ == "__main__":
     """ Load the model """
 
     model = 'master_model'
-    epochs = 40
+    epochs = 26
+    batches = 1
+    lr = 1e-4
 
-    model = tf.keras.models.load_model(f"models/{model}_{epochs}.h5", custom_objects={'MaxUnpooling2D': tfa.layers.MaxUnpooling2D})
+    model = tf.keras.models.load_model(f"models/{model}_{epochs}_{batches}_{lr}.h5", custom_objects={'MaxUnpooling2D': tfa.layers.MaxUnpooling2D})
 
     dataset = load_dataset()
     dataset = tf_dataset(dataset)
@@ -40,8 +42,8 @@ if __name__ == "__main__":
             # pred_mask = cv2.resize(pred_mask, (w, h))
             original_image = np.array(original_image)
 
-            alpha_image = 0.6
-            alpha_mask = 0.8
+            alpha_image = 0
+            alpha_mask = 1
             cv2.addWeighted(pred_mask, alpha_mask, original_image, alpha_image, 0, original_image)
             image = tf.data.Dataset.from_tensor_slices(original_image)
             cv2.imwrite(f"pred_test/{i+1}-{j+1}.jpg", original_image)

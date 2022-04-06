@@ -4,7 +4,8 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
-from master_model import build_model
+# from master_model import build_model
+from model import build_model # U-NET
 # from load_data import load_dataset, tf_dataset
 from load_patches import load_dataset, tf_dataset
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, CSVLogger, EarlyStopping
@@ -13,11 +14,12 @@ from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, CSVLo
 if __name__ == "__main__":
     """ Hyperparamaters """
 
-    batch_size = 2
-    epochs = 39
-    lr = 1e-3
-    model_path = f"models/master_model_{epochs}.h5"
-    csv_path = f"csv/master_model_{epochs}.csv"
+    batch_size = 1
+    epochs = 99
+    lr = 1e-4
+    # lr_split = str(lr).split('-')[1]
+    model_path = f"models/master_model_{epochs}_{batch_size}_{lr}.h5"
+    csv_path = f"csv/master_model_{epochs}_{batch_size}_{lr}.csv"
 
     """ Load the dataset """
 
@@ -35,7 +37,7 @@ if __name__ == "__main__":
         loss='binary_crossentropy',
         optimizer=tf.keras.optimizers.Adam(lr),
         metrics=[
-            # tf.keras.metrics.MeanIoU(num_classes=2),
+            tf.keras.metrics.MeanIoU(num_classes=2),
             tf.keras.metrics.IoU(num_classes=2, target_class_ids=[0]),
             tf.keras.metrics.Recall(),
             tf.keras.metrics.Precision()
@@ -78,4 +80,4 @@ if __name__ == "__main__":
     plt.ylabel('Loss Value')
     plt.ylim([0, 1])
     plt.legend()
-    plt.savefig(f"loss_plot/loss_graph_{epochs}")
+    plt.savefig(f"loss_plot/loss_graph_{epochs}_{batch_size}_{lr}.png")
