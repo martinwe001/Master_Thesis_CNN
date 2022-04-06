@@ -5,6 +5,7 @@ models
 csv
 test_dataset
 predictions
+pred_test
 
 images.png
 loss_graph.png
