@@ -15,7 +15,7 @@ if __name__ == "__main__":
     """ Hyperparamaters """
 
     batch_size = 1
-    epochs = 13
+    epochs = 32
     lr = 1e-4
     # lr_split = str(lr).split('-')[1]
     model_path = f"models/master_model_{epochs}_{batch_size}_{lr}.h5"
